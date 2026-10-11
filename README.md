@@ -13,7 +13,7 @@ The project consists of:
 
 Before getting started, ensure you have the following installed:
 
-- Node.js
+- Node.js 22 LTS (the version CI uses). On Node.js 20, `npm install` in the backend has no prebuilt `better-sqlite3` binary and compiles it from source, which needs `make` and a C++ compiler.
 - npm and/or Yarn
 - PostgreSQL
 - Redis
@@ -53,8 +53,20 @@ docker run -d --name zb-redis -p 6379:6379 redis:7
 
 ### 4. Create your `.env`
 
+The repository does not ship an `.env.example`. Create `zec-bounties-backend/.env` with:
+
 ```bash
-cp .env.example .env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/zec_bounties
+JWT_SECRET=replace-with-a-long-random-string
+PORT=9000
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_EMAIL=mailto:you@example.com
+```
+
+Then generate the VAPID keys:
+
+```bash
 npx web-push generate-vapid-keys
 ```
 
@@ -84,6 +96,8 @@ http://localhost:9000
 
 ### 1. Navigate to the frontend directory
 
+In a second terminal, from the repository root (the backend keeps running in the first):
+
 ```bash
 cd zec-bounties-frontend
 ```
@@ -110,7 +124,7 @@ http://localhost:3000
 
 # Environment Variables
 
-`zec-bounties-backend/.env.example` lists every variable the backend reads, each with a placeholder and a one-line description, marked `[required]` or `[optional]`. Copy it to `zec-bounties-backend/.env`.
+The backend reads its settings from `zec-bounties-backend/.env`.
 
 For local development you only need:
 
@@ -119,7 +133,9 @@ For local development you only need:
 - `PORT=9000`: matches the frontend's development backend URL in `zec-bounties-frontend/lib/configENV.ts`
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_EMAIL`: the backend won't start without them; generate the keys with `npx web-push generate-vapid-keys`
 
-Everything else (GitHub and Discord login, email, Pinata uploads, Zcash wallets and payments) can keep its example value or stay blank until you work on that feature.
+Redis is read from `REDIS_URL`, which defaults to `redis://localhost:6379` (the Docker command above), so it can be left out.
+
+Everything else (GitHub and Discord login, email, Pinata uploads, Zcash wallets and payments) can stay unset until you work on that feature.
 
 ---
 
@@ -158,6 +174,7 @@ Backend:  http://localhost:9000
 - Production deployment uses Vercel for frontend (see https://bounties.zechub.wiki/).
 - For issues or updates, check the subfolder README.md files or open issues on the GitHub repo.
 - This setup guide is derived from repo structure and sub-READMEs (as of July 2026). Always verify commands work in your environment.
+- Verified on 11 October 2026 at commit `62ae6f6` on Debian GNU/Linux 13 (trixie) with Node.js 22.23.3, npm 10.9.9 and Yarn 1.22.22: backend on port 9000, frontend on port 3000, frontend loading data from the backend. PostgreSQL 17 and Redis 8 ran as local services instead of the Docker containers. GitHub login and Zcash payments were not tested.
 
 ## TROUBLESHOOTING
 
